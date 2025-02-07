@@ -1,3 +1,11 @@
+global:
+  project_name: "test"
+  athena:
+    tables:
+      ref:
+        AS_D: "AS_D"
+
+
 workflow:
   name: workflow pipeline
   jobs:

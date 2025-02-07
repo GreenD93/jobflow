@@ -1,5 +1,11 @@
 import argparse
 
+from src.query.dataset_etl import *
+
+from config.logging_config import get_logger
+logger = get_logger()
+
+
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
@@ -8,6 +14,8 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    print(args)
-    
-    print("dataset_etl_task!")
+    logger.info(args)
+
+    train_dataset_query = generate_train_dataset_query()
+
+    logger.info(train_dataset_query)

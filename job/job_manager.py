@@ -3,6 +3,7 @@
 import yaml
 import threading
 import time
+import sys
 
 from config.logging_config import get_logger
 logger = get_logger()
@@ -86,6 +87,8 @@ class JobManager:
         failed_jobs = set()
         running_jobs = set()
 
+        workflow_failed = False
+        
         while True:
             # 의존성이 모두 충족된 Job들 중 아직 실행 안 한 것만 골라서 실행
             ready_jobs = [
@@ -114,7 +117,7 @@ class JobManager:
             for t in threads:
                 t.join()
 
-            # Job 결과 업데이트
+            # Job 실행 결과를 보고 실패가 있으면 즉시 종료
             for job_name in ready_jobs:
                 job = self.jobs[job_name]
                 if job.success:
@@ -126,11 +129,22 @@ class JobManager:
                 elif job.failed:
                     failed_jobs.add(job_name)
                     running_jobs.remove(job_name)
-                    logger.error(f"Job {job_name} failed. Dependent jobs will be skipped.")
+                    logger.error(f"Job {job_name} failed. Stopping the entire workflow.")
+                    workflow_failed = True
+                    break
 
-        logger.info("All jobs in the workflow have been processed.")
-        logger.info(f"Completed jobs: {completed_jobs}")
-        logger.info(f"Failed jobs: {failed_jobs}")
+            if workflow_failed:
+                break
+
+        if workflow_failed:
+            # 프로세스를 종료(Exit Code=1)
+            logger.error("Workflow failed due to a job failure. Exiting process.")
+            sys.exit(1)
+
+        else:
+            logger.info("All jobs in the workflow have been processed.")
+            logger.info(f"Completed jobs: {completed_jobs}")
+            logger.info(f"Failed jobs: {failed_jobs}")
 
     def _run_job_wrapper(self, job):
         job.run()

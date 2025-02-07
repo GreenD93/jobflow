@@ -1,4 +1,8 @@
 # main.py
+import os
+
+PYTHONPATH = os.path.dirname(os.path.abspath(__file__))
+os.environ['PYTHONPATH'] = PYTHONPATH
 
 from job.job import Job
 from job.job_manager import JobManager
